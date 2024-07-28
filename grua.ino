@@ -2,6 +2,7 @@
 #include <IRremote.h>
 #include <Servo.h>
 
+// Define the IR codes for the buttons
 #define boton_0 0xE916FF00
 #define boton_1 0xF30CFF00
 #define boton_2 0xE718FF00
@@ -15,107 +16,51 @@
 #define boton_more 0xEA15FF00
 #define boton_less 0xF807FF00
 
-Servo servo1;
-Servo servo2;
-Servo servo3;
-Servo servo4;
-Servo servo5;
-Servo servo6;
+// Servo objects
+Servo servos[6];
+int servo_angles[6] = {90, 90, 90, 90, 90, 90};
 
-int servo_one_angle = 90;
-int servo_two_angle = 90;
-int servo_three_angle = 90;
-int servo_four_angle = 90;
-int servo_five_angle = 90;
-int servo_six_angle = 90;
-
+// IR receiver pin
 int pinReceptor = 2;
 
-void setup()
-{
-  // put your setup code here, to run once:
+void setup() {
   Serial.begin(9600);
   IrReceiver.begin(pinReceptor, DISABLE_LED_FEEDBACK);
-  servo1.attach(3,500,2500);
-  servo2.attach(5,500,2500);
-  servo3.attach(6,500,2500);
-  servo4.attach(9,500,2500);
-  servo5.attach(10,500,2500);
-  servo6.attach(11,500,2500);
-  set_angle_servo();
+  
+  // Attach the servos
+  int servo_pins[6] = {3, 5, 6, 9, 10, 11};
+  for (int i = 0; i < 6; i++) {
+    servos[i].attach(servo_pins[i], 500, 2500);
+    servos[i].write(servo_angles[i]);
+  }
 }
 
-void loop()
-{
-  // put your main code here, to run repeatedly:
-  if (IrReceiver.decode())
-  {
-    // Serial.println(IrReceiver.decodedIRData.decodedRawData, HEX);
-    if(IrReceiver.decodedIRData.decodedRawData == boton_0) {
-      servo_one_angle += 10;
-      if(servo_one_angle > 180) servo_one_angle = 180;
-      servo1.write(servo_one_angle);
-    } else if(IrReceiver.decodedIRData.decodedRawData == boton_1) {
-      servo_one_angle -= 10;
-      if(servo_one_angle < 0) servo_one_angle = 0;
-      servo1.write(servo_one_angle);
-    } else if(IrReceiver.decodedIRData.decodedRawData == boton_2) {
-      servo_two_angle += 10;
-      if(servo_two_angle > 180) servo_two_angle = 180;
-      servo2.write(servo_two_angle);
-    } else if(IrReceiver.decodedIRData.decodedRawData == boton_3) {
-      servo_two_angle -= 10;
-      if(servo_two_angle < 0) servo_two_angle = 0;
-      servo2.write(servo_two_angle);
-    } else if(IrReceiver.decodedIRData.decodedRawData == boton_4) {
-      servo_three_angle += 10;
-      if(servo_three_angle > 180) servo_three_angle = 180;
-      servo3.write(servo_three_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_5) {
-      servo_three_angle -= 10;
-      if(servo_three_angle < 0) servo_three_angle = 0;
-      servo3.write(servo_three_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_6) {
-      servo_four_angle += 10;
-      if(servo_four_angle > 180) servo_four_angle = 180;
-      servo4.write(servo_four_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_7) {
-      servo_four_angle -= 10;
-      if(servo_four_angle < 0) servo_four_angle = 0;
-      servo4.write(servo_four_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_8) {
-      servo_five_angle += 10;
-      if(servo_five_angle > 180) servo_five_angle = 180;
-      servo4.write(servo_five_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_9) {
-      servo_five_angle -= 10;
-      if(servo_five_angle < 0) servo_five_angle = 0;
-      servo4.write(servo_five_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_more) {
-      servo_six_angle += 10;
-      if(servo_six_angle > 180) servo_six_angle = 0;
-      servo4.write(servo_six_angle);
-    }else if(IrReceiver.decodedIRData.decodedRawData == boton_less) {
-      servo_six_angle -= 10;
-      if(servo_six_angle < 0) servo_six_angle = 0;
-      servo4.write(servo_six_angle);
-    }
+void loop() {
+  if (IrReceiver.decode()) {
+    handleIR(IrReceiver.decodedIRData.decodedRawData);
     IrReceiver.resume();
   }
 }
 
+void handleIR(unsigned long irCode) {
+  switch (irCode) {
+    case boton_0: adjustServo(0, 10); break;
+    case boton_1: adjustServo(0, -10); break;
+    case boton_2: adjustServo(1, 10); break;
+    case boton_3: adjustServo(1, -10); break;
+    case boton_4: adjustServo(2, 10); break;
+    case boton_5: adjustServo(2, -10); break;
+    case boton_6: adjustServo(3, 10); break;
+    case boton_7: adjustServo(3, -10); break;
+    case boton_8: adjustServo(4, 10); break;
+    case boton_9: adjustServo(4, -10); break;
+    case boton_more: adjustServo(5, 10); break;
+    case boton_less: adjustServo(5, -10); break;
+  }
+}
 
-void set_angle_servo() {
-  servo_one_angle = servo1.read();
-  servo_two_angle = servo2.read();
-  servo_three_angle = servo3.read();
-  servo_four_angle = servo4.read();
-  servo_five_angle = servo5.read();
-  servo_six_angle = servo6.read();
-  servo1.write(servo_one_angle);
-  servo2.write(servo_two_angle);
-  servo3.write(servo_three_angle);
-  servo4.write(servo_four_angle);
-  servo5.write(servo_five_angle);
-  servo6.write(servo_six_angle);
+void adjustServo(int servoIndex, int angleChange) {
+  servo_angles[servoIndex] += angleChange;
+  servo_angles[servoIndex] = constrain(servo_angles[servoIndex], 0, 180);
+  servos[servoIndex].write(servo_angles[servoIndex]);
 }
